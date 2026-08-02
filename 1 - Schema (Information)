@@ -1,3 +1,5 @@
 *Jaybird Baseball Predictive Statistics*
 *All tables are updated yearly.
-  1. creating_age_regression
+  1. lookup_batting_age_regression
+  2. lookup_pitching_age_regression
+  3. lookup_fielding_age_regression
