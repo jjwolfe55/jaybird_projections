@@ -1,0 +1,5 @@
+*These are all settings required to do Data Run without error.*
+SET GLOBAL local_infile=1;
+SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));
+SET sql_mode=(SELECT REPLACE(@@sql_mode,'ERROR_FOR_DIVISION_BY_ZERO',''));
+SET sql_mode="NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION";
