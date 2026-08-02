@@ -1,1 +1,15 @@
-
+CREATE TABLE lookup_batting_age_regression (
+age_from SMALLINT,
+age_to SMALLINT,
+sample_size SMALLINT,
+pa_delta DECIMAL(10,3),
+so_delta DECIMAL(10,3),
+bb_delta DECIMAL(10,3),
+1b_delta DECIMAL(10,3),
+2b_delta DECIMAL(10,3),
+3b_delta DECIMAL(10,3),
+hr_delta DECIMAL(10,3),
+sb_delta DECIMAL(10,3),
+cs_delta DECIMAL(10,3),
+PRIMARY KEY (age_to)
+);
