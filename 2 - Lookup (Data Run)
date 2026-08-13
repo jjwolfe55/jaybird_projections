@@ -91,3 +91,80 @@ SELECT
 FROM age_pairs
 GROUP BY age_from, age_to
 ORDER BY age_from;
+
+INSERT INTO lookup_pitching_age_regression (
+    age_from,
+    age_to,
+    sample_size,
+    bf_delta,
+    so_delta,
+    bb_delta,
+    1b_delta,
+    2b_delta,
+    3b_delta,
+    hr_delta
+)
+WITH player_pool AS (
+  SELECT player_id
+    FROM jaybird.player_defense_career_pitching
+    WHERE seasons > 9 AND bf > 2999
+),
+
+age_stats AS (
+    SELECT
+        player_id,
+        age,
+
+        -- Raw pitching event fields (NO _delta)
+        bf,
+        so,
+        bb,
+        1b,
+        2b,
+        3b,
+        hr
+
+    FROM jaybird.player_defense_season_pitching
+    WHERE bf > 300
+      AND age BETWEEN 18 AND 45
+      AND player_id IN (SELECT player_id FROM player_pool)
+),
+
+age_pairs AS (
+    SELECT
+        a.player_id,
+        a.age AS age_from,
+        b.age AS age_to,
+
+        -- Raw fields for delta math
+        a.bf AS bf_a, b.bf AS bf_b,
+        a.so AS so_a, b.so AS so_b,
+        a.bb AS bb_a, b.bb AS bb_b,
+        a.1b AS 1b_a, b.1b AS 1b_b,
+        a.2b AS 2b_a, b.2b AS 2b_b,
+        a.3b AS 3b_a, b.3b AS 3b_b,
+        a.hr AS hr_a, b.hr AS hr_b
+
+    FROM age_stats AS a
+    INNER JOIN age_stats AS b
+      ON a.player_id = b.player_id
+     AND b.age = a.age + 1
+)
+
+SELECT
+    age_from,
+    age_to,
+    COUNT(*) AS sample_size,
+
+    -- DELTAS (output fields have _delta)
+    (SUM(bf_b) - SUM(bf_a)) / NULLIF(SUM(bf_a),0) AS bf_delta,
+    (SUM(so_b) - SUM(so_a)) / NULLIF(SUM(so_a),0) AS so_delta,
+    (SUM(bb_b) - SUM(bb_a)) / NULLIF(SUM(bb_a),0) AS bb_delta,
+    (SUM(1b_b) - SUM(1b_a)) / NULLIF(SUM(1b_a),0) AS 1b_delta,
+    (SUM(2b_b) - SUM(2b_a)) / NULLIF(SUM(2b_a),0) AS 2b_delta,
+    (SUM(3b_b) - SUM(3b_a)) / NULLIF(SUM(3b_a),0) AS 3b_delta,
+    (SUM(hr_b) - SUM(hr_a)) / NULLIF(SUM(hr_a),0) AS hr_delta
+
+FROM age_pairs
+GROUP BY age_from, age_to
+ORDER BY age_from;
