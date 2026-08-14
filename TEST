@@ -1,0 +1,37 @@
+WITH w AS (
+    SELECT
+        cur.player_id,
+        cur.player_name,
+        cur.season AS season_id,
+        cur.age,
+
+        -- Weighted totals (rounded to whole numbers)
+        ROUND(cur.g   * 0.50 + COALESCE(prev1.g,0)   * 0.30 + COALESCE(prev2.g,0)   * 0.20, 0) AS g_wavg,
+        ROUND(cur.pa  * 0.50 + COALESCE(prev1.pa,0)  * 0.30 + COALESCE(prev2.pa,0)  * 0.20, 0) AS pa_wavg,
+        ROUND(cur.ab  * 0.50 + COALESCE(prev1.ab,0)  * 0.30 + COALESCE(prev2.ab,0)  * 0.20, 0) AS ab_wavg,
+        ROUND(cur.r   * 0.50 + COALESCE(prev1.r,0)   * 0.30 + COALESCE(prev2.r,0)   * 0.20, 0) AS r_wavg,
+        ROUND(cur.h   * 0.50 + COALESCE(prev1.h,0)   * 0.30 + COALESCE(prev2.h,0)   * 0.20, 0) AS h_wavg,
+        ROUND(cur.1b * 0.50 + COALESCE(prev1.1b,0) * 0.30 + COALESCE(prev2.1b,0) * 0.20, 0) AS 1b_wavg,
+        ROUND(cur.2b * 0.50 + COALESCE(prev1.2b,0) * 0.30 + COALESCE(prev2.2b,0) * 0.20, 0) AS 2b_wavg,
+        ROUND(cur.3b * 0.50 + COALESCE(prev1.3b,0) * 0.30 + COALESCE(prev2.3b,0) * 0.20, 0) AS 3b_wavg,
+        ROUND(cur.hr  * 0.50 + COALESCE(prev1.hr,0)  * 0.30 + COALESCE(prev2.hr,0)  * 0.20, 0) AS hr_wavg,
+        ROUND(cur.rbi * 0.50 + COALESCE(prev1.rbi,0) * 0.30 + COALESCE(prev2.rbi,0) * 0.20, 0) AS rbi_wavg,
+        ROUND(cur.sh  * 0.50 + COALESCE(prev1.sh,0)  * 0.30 + COALESCE(prev2.sh,0)  * 0.20, 0) AS sh_wavg,
+        ROUND(cur.sf  * 0.50 + COALESCE(prev1.sf,0)  * 0.30 + COALESCE(prev2.sf,0)  * 0.20, 0) AS sf_wavg,
+        ROUND(cur.hbp * 0.50 + COALESCE(prev1.hbp,0) * 0.30 + COALESCE(prev2.hbp,0) * 0.20, 0) AS hbp_wavg,
+        ROUND(cur.bb  * 0.50 + COALESCE(prev1.bb,0)  * 0.30 + COALESCE(prev2.bb,0)  * 0.20, 0) AS bb_wavg,
+        ROUND(cur.ibb * 0.50 + COALESCE(prev1.ibb,0) * 0.30 + COALESCE(prev2.ibb,0) * 0.20, 0) AS ibb_wavg,
+        ROUND(cur.so  * 0.50 + COALESCE(prev1.so,0)  * 0.30 + COALESCE(prev2.so,0)  * 0.20, 0) AS so_wavg,
+        ROUND(cur.gdp * 0.50 + COALESCE(prev1.gdp,0) * 0.30 + COALESCE(prev2.gdp,0) * 0.20, 0) AS gdp_wavg,
+        ROUND(cur.ci  * 0.50 + COALESCE(prev1.ci,0)  * 0.30 + COALESCE(prev2.ci,0)  * 0.20, 0) AS ci_wavg,
+        ROUND(cur.roe * 0.50 + COALESCE(prev1.roe,0) * 0.30 + COALESCE(prev2.roe,0) * 0.20, 0) AS roe_wavg
+
+    FROM jaybird.player_offense_season_batting cur
+    LEFT JOIN jaybird.player_offense_season_batting prev1
+        ON cur.player_id = prev1.player_id
+       AND prev1.season = cur.season - 1
+    LEFT JOIN jaybird.player_offense_season_batting prev2
+        ON cur.player_id = prev2.player_id
+       AND prev2.season = cur.season - 2
+)
+SELECT * FROM w
