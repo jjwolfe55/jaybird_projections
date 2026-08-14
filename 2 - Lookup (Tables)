@@ -27,3 +27,15 @@ bb_delta DECIMAL(10,3),
 hr_delta DECIMAL(10,3),
 PRIMARY KEY (age_to)
 );
+
+CREATE TABLE lookup_fielding_age_regression (
+pos VARCHAR(3),
+age_from SMALLINT,
+age_to SMALLINT,
+sample_size SMALLINT,
+inn_delta DECIMAL(10,3),
+po_delta DECIMAL(10,3),
+a_delta DECIMAL(10,3),
+e_delta DECIMAL(10,3),
+PRIMARY KEY (pos,age_to)
+);
