@@ -168,3 +168,66 @@ SELECT
 FROM age_pairs
 GROUP BY age_from, age_to
 ORDER BY age_from;
+
+INSERT INTO lookup_fielding_age_regression (
+    pos,
+    age_from,
+    age_to,
+    sample_size,
+    inn_delta,
+    po_delta,
+    a_delta,
+    e_delta
+)
+WITH player_pool AS (
+    SELECT player_id
+    FROM jaybird.player_defense_career_fielding_x_pos
+    WHERE seasons > 9 AND inn > 2000
+),
+
+age_stats AS (
+    SELECT
+        player_id,
+        pos,
+        age,
+        inn,
+        po,
+        a,
+        e
+    FROM jaybird.player_defense_season_fielding_x_pos
+    WHERE inn > 600
+      AND age BETWEEN 18 AND 45
+      AND player_id IN (SELECT player_id FROM player_pool)
+),
+
+age_pairs AS (
+    SELECT
+        a.player_id,
+        a.pos,
+        a.age AS age_from,
+        b.age AS age_to,
+
+        a.inn AS inn_a, b.inn AS inn_b,
+        a.po  AS po_a,  b.po  AS po_b,
+        a.a   AS a_a,   b.a   AS a_b,
+        a.e   AS e_a,   b.e   AS e_b
+    FROM age_stats AS a
+    INNER JOIN age_stats AS b
+      ON a.player_id = b.player_id
+     AND b.age = a.age + 1
+)
+
+SELECT
+    pos,
+    age_from,
+    age_to,
+    COUNT(*) AS sample_size,
+
+    (SUM(inn_b) - SUM(inn_a)) / NULLIF(SUM(inn_a), 0) AS inn_delta,
+    (SUM(po_b)  - SUM(po_a))  / NULLIF(SUM(po_a), 0)  AS po_delta,
+    (SUM(a_b)   - SUM(a_a))   / NULLIF(SUM(a_a), 0)   AS a_delta,
+    (SUM(e_b)   - SUM(e_a))   / NULLIF(SUM(e_a), 0)   AS e_delta
+
+FROM age_pairs
+GROUP BY pos, age_from, age_to
+ORDER BY pos, age_from;
